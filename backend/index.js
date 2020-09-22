@@ -1,2 +1,3 @@
-console.log('ty pidor')
+const DataTransport = require('./src/dataTransport')
 
+const transport = new DataTransport()
