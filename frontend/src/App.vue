@@ -1,17 +1,37 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
+    <button id="findGame" @click="createNewGame">Найти игру</button>
+    <button id="createGame">Играть с друзьями</button>
   </div>
 </template>
 
 <script>
-import DataTransport from "./dataTransport";
+import Game from "./Game";
 
 export default {
   name: "App",
   created() {
-    const transport = new DataTransport();
-    console.log(transport);
+
+  },
+  methods: {
+    createNewGame() {
+      const game = new Game();
+      const randomNickName = this.makeid(10)
+
+      game.login(randomNickName)
+    },
+    makeid(length) {
+        let result = ""
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        const charactersLength = characters.length
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(
+                Math.floor(Math.random() * charactersLength)
+            )
+        }
+        return result
+    };
+
   },
 };
 </script>

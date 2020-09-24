@@ -2,83 +2,30 @@ import io from "socket.io-client";
 
 export default class DataTransport {
     constructor() {
-        var username;
-        var connected = false;
+        this._username = ''
+        this._connected = false;
 
-        var socket = io("http://localhost:3000");
+        const socket = io("http://localhost:3000");
 
-        const addParticipantsMessage = (data) => {
-            if (data.numUsers === 1) {
-                console.log("there's 1 participant");
-            } else {
-                console.log("there are " + data.numUsers + " participants");
-            }
-        };
+        this._setUsername();
+        setInterval(() => this._sendMessage(), 5000);
 
-        // Sets the client's username
-        const setUsername = () => {
-            username = makeid(5);
-            // Tell the server your username
-            socket.emit("add user", username);
-        };
-
-        // Sends a chat message
-        const sendMessage = () => {
-            const message = makeid(10);
-
-            if (message && connected) {
-                addChatMessage({
-                    username: username,
-                    message: message,
-                });
-                // tell server to execute 'new message' and send along one parameter
-                socket.emit("new message", message);
-            }
-        };
-
-        const addChatMessage = (data) => {
-            console.log(
-                `${new Date().toDateString()}: ${data.username}: ${data.message}`
-            );
-        };
-
-        const makeid = (length) => {
-            var result = "";
-            var characters =
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var charactersLength = characters.length;
-            for (var i = 0; i < length; i++) {
-                result += characters.charAt(
-                    Math.floor(Math.random() * charactersLength)
-                );
-            }
-            return result;
-        };
-
-        setUsername();
-        setInterval(() => sendMessage(), 5000);
-
-        // Whenever the server emits 'login', log the login message
         socket.on("login", (data) => {
-            connected = true;
-            // Display the welcome message
-            var message = "Welcome to Chat – ";
+            this._connected = true;
+            const message = "Welcome to Chat – ";
             console.log(message);
-            addParticipantsMessage(data);
+            this._addParticipantsMessage(data);
         });
 
-        // Whenever the server emits 'new message', update the chat body
         socket.on("new message", (data) => {
-            addChatMessage(data);
+            this._addChatMessage(data);
         });
 
-        // Whenever the server emits 'user joined', log it in the chat body
         socket.on("user joined", (data) => {
             console.log(data.username + " joined");
             addParticipantsMessage(data);
         });
 
-        // Whenever the server emits 'user left', log it in the chat body
         socket.on("user left", (data) => {
             console.log(data.username + " left");
             addParticipantsMessage(data);
@@ -98,5 +45,50 @@ export default class DataTransport {
         socket.on("reconnect_error", () => {
             console.log("attempt to reconnect has failed");
         });
+    }
+
+    _makeid(length) {
+        let result = ""
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        const charactersLength = characters.length
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(
+                Math.floor(Math.random() * charactersLength)
+            )
+        }
+        return result
+    };
+
+    _sendMessage() {
+        const message = this._makeid(10);
+
+        if (message && connected) {
+            addChatMessage({
+                username: username,
+                message: message,
+            });
+            socket.emit("new message", message);
+        }
+    }
+
+    _setUsername() {
+        this._username = this._makeid(5);
+        socket.emit("add user", this._username);
+    };
+
+    _addParticipantsMessage(data) {
+        if (data.numUsers === 1) {
+            console.log("there's 1 participant");
+        } else {
+            console.log("there are " + data.numUsers + " participants");
+        }
+    };
+
+    _addChatMessage(data) {
+        console.log(`${new Date().toDateString()}: ${data.username}: ${data.message}`);
+    };
+
+    login(userName) {
+        socket.emit("add user", userName)
     }
 }

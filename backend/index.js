@@ -1,3 +1,10 @@
 const DataTransport = require('./src/dataTransport')
 
-const transport = new DataTransport()
+class Main {
+    static main() {
+        const transport = new DataTransport()
+
+    }
+}
+
+Main.main()
